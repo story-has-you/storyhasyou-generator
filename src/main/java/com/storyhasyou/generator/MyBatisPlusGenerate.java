@@ -72,12 +72,12 @@ public class MyBatisPlusGenerate {
     /**
      * 数据库账号
      */
-    private static final String JDBC_USERNAME = "blog_system";
+    private static final String JDBC_USERNAME = "";
 
     /**
      * 数据库密码
      */
-    private static final String JDBC_PASSWORD = "idyvpLmCuNDBmByjPsmwyFHg";
+    private static final String JDBC_PASSWORD = "";
 
     /**
      * 包配置 - 父级目录
