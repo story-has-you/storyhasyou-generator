@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+}
+
+group 'com.storyhasyou.generator'
+version '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+
+ext {
+    libraries = [
+            bladesOfChaosVersion = '1.9.1.RELEASE'
+    ]
+    lib = [
+            'bladesOfChaos': "com.storyhasyou.kratos:blades-of-chaos:${bladesOfChaosVersion}",
+    ]
+}
+
+
+allprojects {
+    repositories {
+        maven {
+            url 'https://maven.aliyun.com/repository/public'
+        }
+
+        maven {
+            credentials {
+                username 'izsDIz'
+                password 'd0m3vboJtv'
+            }
+            url 'https://repo.rdc.aliyun.com/repository/80472-release-g0GNmg/'
+        }
+        maven {
+            credentials {
+                username 'izsDIz'
+                password 'd0m3vboJtv'
+            }
+            url 'https://repo.rdc.aliyun.com/repository/80472-snapshot-JrqSLt/'
+        }
+    }
+}
+
+dependencies {
+    implementation 'mysql:mysql-connector-java:8.0.22'
+    implementation 'com.baomidou:mybatis-plus-generator:3.4.0'
+    implementation "${lib.'bladesOfChaos'}"
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    implementation 'org.freemarker:freemarker:2.3.30'
+}
