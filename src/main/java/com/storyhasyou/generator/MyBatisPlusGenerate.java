@@ -80,12 +80,12 @@ public class MyBatisPlusGenerate {
     /**
      * 数据库账号
      */
-    private static final String JDBC_USERNAME = "";
+    private static final String JDBC_USERNAME = "blog_system";
 
     /**
      * 数据库密码
      */
-    private static final String JDBC_PASSWORD = "";
+    private static final String JDBC_PASSWORD = "idyvpLmCuNDBmByjPsmwyFHg";
 
     /**
      * 包配置 - 父级目录
@@ -132,7 +132,10 @@ public class MyBatisPlusGenerate {
      * 枚举列
      */
     private static final Map<String, Class<?>> COLUMNS = ImmutableMap.<String, Class<?>>builder()
+            .put("t_article.categories", Integer.class)
+            .put("ums_author.gender", Integer.class)
             .build();
+
 
 
     /**
