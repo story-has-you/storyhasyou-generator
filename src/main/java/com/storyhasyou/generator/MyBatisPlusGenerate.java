@@ -16,13 +16,24 @@ import com.baomidou.mybatisplus.generator.config.po.TableFill;
 import com.baomidou.mybatisplus.generator.config.po.TableInfo;
 import com.baomidou.mybatisplus.generator.config.querys.MySqlQuery;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
+import com.baomidou.mybatisplus.generator.engine.AbstractTemplateEngine;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
+import com.google.common.collect.ImmutableMap;
 import com.storyhasyou.kratos.base.BaseController;
 import com.storyhasyou.kratos.base.BaseEntity;
 import com.storyhasyou.kratos.base.BaseService;
 import com.storyhasyou.kratos.base.BaseServiceImpl;
+import com.storyhasyou.kratos.toolkit.DatePattern;
+import com.storyhasyou.kratos.utils.CollectionUtils;
+import com.storyhasyou.kratos.utils.DateUtils;
+import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The type My batis plus generate.
@@ -31,6 +42,7 @@ import java.util.List;
  */
 public class MyBatisPlusGenerate {
 
+    protected static final Logger logger = LoggerFactory.getLogger(MyBatisPlusGenerate.class);
     /**
      * 作者
      */
@@ -72,12 +84,12 @@ public class MyBatisPlusGenerate {
     /**
      * 数据库账号
      */
-    private static final String JDBC_USERNAME = "";
+    private static final String JDBC_USERNAME = "blog_system";
 
     /**
      * 数据库密码
      */
-    private static final String JDBC_PASSWORD = "";
+    private static final String JDBC_PASSWORD = "idyvpLmCuNDBmByjPsmwyFHg";
 
     /**
      * 包配置 - 父级目录
@@ -119,6 +131,14 @@ public class MyBatisPlusGenerate {
      * 注意：如果表前缀与模块命相同，生成时会删除前缀，比如：core_admin 最终构建为 Admin, AdminController ...
      */
     private static final String PACKAGE_MODULE_NAME = "t";
+
+    /**
+     * 枚举列
+     */
+    private static final Map<String, Class<?>> COLUMNS = ImmutableMap.<String, Class<?>>builder()
+            .put("categories", Integer.class)
+            .build();
+
 
     /**
      * 全局配置
@@ -258,12 +278,60 @@ public class MyBatisPlusGenerate {
         return config;
     }
 
+    private static void enumGenerate(AutoGenerator generator) throws Exception {
+        if (CollectionUtils.isEmpty(COLUMNS)) {
+            return;
+        }
+        List<EnumGenerateModel> enumGenerateModelList = new ArrayList<>();
+        COLUMNS.forEach((column, baseEnumType) -> {
+            EnumGenerateModel generateModel = new EnumGenerateModel();
+            generateModel.setAuthor(globalConfig().getAuthor());
+            generateModel.setDate(DateUtils.dateToString(LocalDate.now(), DatePattern.NORM_SLASH_DATE_PATTERN));
+            generateModel.setBaseEnumType(baseEnumType.getSimpleName());
+            generateModel.setColumn(column);
+            generateModel.setEnumName(captureName(column) + "Enum");
+            enumGenerateModelList.add(generateModel);
+        });
+        AbstractTemplateEngine templateEngine = generator.getTemplateEngine();
+        String packagePath = PACKAGE_PARENT.replaceAll("\\.", "/");
+        Map<String, String> pathInfo = generator.getConfig().getPathInfo();
+        String entityPath = pathInfo.get("entity_path");
+        String enumPath = entityPath.substring(0, entityPath.lastIndexOf(File.separator)) + "\\enums";
+        File dir = new File(enumPath);
+        if (!dir.exists()) {
+            boolean result = dir.mkdirs();
+            if (result) {
+                logger.debug("创建目录： [" + enumPath + "]");
+            }
+        }
+        for (EnumGenerateModel enumGenerateModel : enumGenerateModelList) {
+            Map<String, Object> objectMap = new HashMap<>(1);
+            objectMap.put("enum", enumGenerateModel);
+            String outPutFile = "src/main/java/" + packagePath + "/"
+                    + PACKAGE_MODULE_NAME + "/enums/" + enumGenerateModel.getEnumName() + ".java";
+            String templatePath = "templates/enum.java";
+            templateEngine.writer(objectMap, templateEngine.templateFilePath(templatePath), outPutFile);
+        }
+    }
+
+    /**
+     * 将字符串的首字母转大写
+     *
+     * @param str 需要转换的字符串
+     */
+    private static String captureName(String str) {
+        // 进行字母的ascii编码前移，效率要高于截取字符串进行转换的操作
+        char[] cs = str.toCharArray();
+        cs[0] -= 32;
+        return String.valueOf(cs);
+    }
+
     /**
      * The entry point of application.
      *
      * @param args the input arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         AutoGenerator generator = new AutoGenerator();
         generator.setGlobalConfig(globalConfig());
         generator.setDataSource(dataSourceConfig());
@@ -273,6 +341,7 @@ public class MyBatisPlusGenerate {
         generator.setCfg(injectionConfig());
         generator.setStrategy(strategyConfig());
         generator.execute();
+        enumGenerate(generator);
     }
 
 

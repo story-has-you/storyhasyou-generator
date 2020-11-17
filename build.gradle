@@ -17,7 +17,7 @@ configurations {
 
 ext {
     libraries = [
-            bladesOfChaosVersion = '1.9.1.RELEASE'
+            bladesOfChaosVersion = '1.9.4.RELEASE'
     ]
     lib = [
             'bladesOfChaos': "com.storyhasyou.kratos:blades-of-chaos:${bladesOfChaosVersion}",
