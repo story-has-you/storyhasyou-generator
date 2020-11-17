@@ -1,4 +1,6 @@
 plugins {
+    id 'org.springframework.boot' version '2.4.0'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
     id 'java'
 }
 
@@ -17,7 +19,7 @@ configurations {
 
 ext {
     libraries = [
-            bladesOfChaosVersion = '1.9.4.RELEASE'
+            bladesOfChaosVersion = '1.9.6.RELEASE'
     ]
     lib = [
             'bladesOfChaos': "com.storyhasyou.kratos:blades-of-chaos:${bladesOfChaosVersion}",
@@ -49,10 +51,15 @@ allprojects {
 }
 
 dependencies {
-    implementation 'mysql:mysql-connector-java:8.0.22'
+    implementation 'org.springframework.boot:spring-boot-starter-json'
+    implementation 'mysql:mysql-connector-java'
     implementation 'com.baomidou:mybatis-plus-generator:3.4.0'
     implementation "${lib.'bladesOfChaos'}"
-    compileOnly 'org.projectlombok:lombok:1.18.16'
-    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.freemarker:freemarker:2.3.30'
+}
+
+test {
+    useJUnitPlatform()
 }

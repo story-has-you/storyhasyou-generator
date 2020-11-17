@@ -2,6 +2,8 @@ package com.storyhasyou.generator;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * The type Enum generate model.
  *
@@ -31,6 +33,18 @@ public class EnumGenerateModel {
      */
     private String date;
 
-    private String enumPackage;
+    /**
+     * 表名
+     */
+    private String tableName;
+
+    private List<Element> elements;
+
+    @Data
+    public static final class Element {
+        private Object code;
+        private String message;
+        private String chinese;
+    }
 
 }

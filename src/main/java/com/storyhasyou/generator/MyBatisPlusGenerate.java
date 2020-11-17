@@ -5,12 +5,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
-import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
-import com.baomidou.mybatisplus.generator.config.FileOutConfig;
-import com.baomidou.mybatisplus.generator.config.GlobalConfig;
-import com.baomidou.mybatisplus.generator.config.PackageConfig;
-import com.baomidou.mybatisplus.generator.config.StrategyConfig;
-import com.baomidou.mybatisplus.generator.config.TemplateConfig;
+import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
 import com.baomidou.mybatisplus.generator.config.po.TableFill;
 import com.baomidou.mybatisplus.generator.config.po.TableInfo;
@@ -26,14 +21,15 @@ import com.storyhasyou.kratos.base.BaseServiceImpl;
 import com.storyhasyou.kratos.toolkit.DatePattern;
 import com.storyhasyou.kratos.utils.CollectionUtils;
 import com.storyhasyou.kratos.utils.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The type My batis plus generate.
@@ -125,18 +121,19 @@ public class MyBatisPlusGenerate {
     /**
      * 要生成的表，用 `,` 分割
      */
-    private static final String TABLES = "t_article";
+    private static final String TABLES = "t_article,ums_author";
     /**
      * 包配置 - 模块目录 <br>
      * 注意：如果表前缀与模块命相同，生成时会删除前缀，比如：core_admin 最终构建为 Admin, AdminController ...
      */
-    private static final String PACKAGE_MODULE_NAME = "t";
+    private static final String PACKAGE_MODULE_NAME = "";
 
     /**
      * 枚举列
      */
     private static final Map<String, Class<?>> COLUMNS = ImmutableMap.<String, Class<?>>builder()
-            .put("categories", Integer.class)
+            .put("t_article.categories", Integer.class)
+            .put("ums_author.gender", String.class)
             .build();
 
 
@@ -269,8 +266,7 @@ public class MyBatisPlusGenerate {
             @Override
             public String outputFile(TableInfo tableInfo) {
                 // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
-                return USER_DIR + "/src/main/resources/mapper/" + tableInfo.getEntityName() + "Mapper"
-                        + StringPool.DOT_XML;
+                return USER_DIR + "/src/main/resources/mapper/" + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_XML;
             }
         });
 
@@ -288,15 +284,17 @@ public class MyBatisPlusGenerate {
             generateModel.setAuthor(globalConfig().getAuthor());
             generateModel.setDate(DateUtils.dateToString(LocalDate.now(), DatePattern.NORM_SLASH_DATE_PATTERN));
             generateModel.setBaseEnumType(baseEnumType.getSimpleName());
-            generateModel.setColumn(column);
-            generateModel.setEnumName(captureName(column) + "Enum");
+            String[] split = column.split("\\.");
+            generateModel.setTableName(split[0]);
+            generateModel.setColumn(split[1]);
+            generateModel.setEnumName(captureName(split[1]) + "Enum");
             enumGenerateModelList.add(generateModel);
         });
         AbstractTemplateEngine templateEngine = generator.getTemplateEngine();
         String packagePath = PACKAGE_PARENT.replaceAll("\\.", "/");
         Map<String, String> pathInfo = generator.getConfig().getPathInfo();
         String entityPath = pathInfo.get("entity_path");
-        String enumPath = entityPath.substring(0, entityPath.lastIndexOf(File.separator)) + "\\enums";
+        String enumPath = entityPath.substring(0, entityPath.lastIndexOf(File.separator)) + File.separator + "enums";
         File dir = new File(enumPath);
         if (!dir.exists()) {
             boolean result = dir.mkdirs();
@@ -305,10 +303,18 @@ public class MyBatisPlusGenerate {
             }
         }
         for (EnumGenerateModel enumGenerateModel : enumGenerateModelList) {
+            Map<Object, String> taxtMap = DataSourceUtils.textMap(dataSourceConfig(), enumGenerateModel);
+            List<EnumGenerateModel.Element> translation = TranslationUtils.translation(taxtMap);
+            translation.forEach(element -> {
+                String message = element.getMessage();
+                message = message.replaceAll(StringPool.SPACE, StringPool.UNDERSCORE).toUpperCase();
+                message = message.replaceAll("THE_", StringPool.EMPTY);
+                element.setMessage(message);
+            });
+            enumGenerateModel.setElements(translation);
             Map<String, Object> objectMap = new HashMap<>(1);
             objectMap.put("enum", enumGenerateModel);
-            String outPutFile = "src/main/java/" + packagePath + "/"
-                    + PACKAGE_MODULE_NAME + "/enums/" + enumGenerateModel.getEnumName() + ".java";
+            String outPutFile = "src/main/java/" + packagePath + "/" + PACKAGE_MODULE_NAME + "/enums/" + enumGenerateModel.getEnumName() + StringPool.DOT_JAVA;
             String templatePath = "templates/enum.java";
             templateEngine.writer(objectMap, templateEngine.templateFilePath(templatePath), outPutFile);
         }
