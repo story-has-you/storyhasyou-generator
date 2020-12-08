@@ -1,18 +1,19 @@
 package com.storyhasyou.generator;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.storyhasyou.kratos.enums.LanguageEnum;
+import com.storyhasyou.kratos.handler.TranslationHandler;
 import com.storyhasyou.kratos.utils.CollectionUtils;
-import com.storyhasyou.kratos.utils.JsonUtils;
-import com.storyhasyou.kratos.utils.OkHttpUtils;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * The type Translation utils.
@@ -21,57 +22,35 @@ import java.util.*;
  */
 public class TranslationUtils {
 
-    private static final String YOUDAO_URL = "https://openapi.youdao.com/api";
-
-    private static final String APP_KEY = "1dd58899d62d5289";
-    private static final String APP_SECRET = "bj7zxfEoxbjENLscRlvf93HdbJhmBpOI";
-
-
     /**
      * Translation map.
      *
-     * @param taxtMap the taxt map
+     * @param textMap the map
      * @return the map
      */
-    public static List<EnumGenerateModel.Element> translation(Map<Object, String> taxtMap) {
-        if (CollectionUtils.isEmpty(taxtMap)) {
+    public static List<EnumGenerateModel.Element> translation(Map<Object, String> textMap) {
+        if (CollectionUtils.isEmpty(textMap)) {
             return Collections.emptyList();
         }
-        List<EnumGenerateModel.Element> elements = new ArrayList<>(taxtMap.size());
-        taxtMap.forEach((code, value) -> {
-            Map<String, Object> params = new HashMap<>();
-            String salt = String.valueOf(System.currentTimeMillis());
-            params.put("from", "zh-CHS");
-            params.put("to", "en");
-            params.put("signType", "v3");
-            String curtime = String.valueOf(System.currentTimeMillis() / 1000);
-            params.put("curtime", curtime);
-            String signStr = APP_KEY + truncate(value) + salt + curtime + APP_SECRET;
-            String sign = getDigest(signStr);
-            params.put("appKey", APP_KEY);
-            params.put("q", value);
-            params.put("salt", salt);
-            params.put("sign", sign);
-            String response = OkHttpUtils.form(YOUDAO_URL, params);
-            if (StringUtils.isNotBlank(response)) {
-                TranslationResponseDTO translationResponseDTO = JsonUtils.parse(response, TranslationResponseDTO.class);
-                List<String> translation = translationResponseDTO.getTranslation();
-                if (CollectionUtils.isNotEmpty(translation)) {
-                    translation.stream()
-                            .findFirst()
-                            .ifPresent(message -> {
-                                EnumGenerateModel.Element element = new EnumGenerateModel.Element();
-                                element.setChinese(value);
-                                element.setMessage(message);
-                                element.setCode(code);
-                                elements.add(element);
-                            });
-                }
-            }
+        List<EnumGenerateModel.Element> elements = new ArrayList<>(textMap.size());
+        textMap.forEach((code, value) -> {
+            TranslationHandler translationHandler = TranslationHandler.builder().build();
+            String message = translationHandler.translation(value, LanguageEnum.ZH_CHS, LanguageEnum.EN);
+            EnumGenerateModel.Element element = new EnumGenerateModel.Element();
+            element.setChinese(value);
+            element.setMessage(message);
+            element.setCode(code);
+            elements.add(element);
         });
         return elements;
     }
 
+    /**
+     * Truncate string.
+     *
+     * @param q the q
+     * @return the string
+     */
     private static String truncate(String q) {
         if (q == null) {
             return null;
@@ -82,6 +61,9 @@ public class TranslationUtils {
 
     /**
      * 生成加密字段
+     *
+     * @param string the string
+     * @return the digest
      */
     private static String getDigest(String string) {
         if (string == null) {
@@ -113,44 +95,113 @@ public class TranslationUtils {
     @Data
     public static class TranslationResponseDTO implements Serializable {
 
+        /**
+         * The Query.
+         */
         private String query;
+        /**
+         * The Error code.
+         */
         private String errorCode;
+        /**
+         * The L.
+         */
         private String l;
+        /**
+         * The T speak url.
+         */
         @JsonProperty("tSpeakUrl")
         private String tSpeakUrl;
+        /**
+         * The Request id.
+         */
         private String requestId;
+        /**
+         * The Dict.
+         */
         private Dict dict;
+        /**
+         * The Webdict.
+         */
         private Webdict webdict;
+        /**
+         * The Basic.
+         */
         private Basic basic;
+        /**
+         * The Is word.
+         */
         private Boolean isWord;
+        /**
+         * The Speak url.
+         */
         private String speakUrl;
+        /**
+         * The Return phrase.
+         */
         private List<String> returnPhrase;
+        /**
+         * The Web.
+         */
         private List<Web> web;
+        /**
+         * The Translation.
+         */
         private List<String> translation;
 
+        /**
+         * The type Dict.
+         */
         @NoArgsConstructor
         @Data
         public static class Dict {
+            /**
+             * The Url.
+             */
             private String url;
         }
 
+        /**
+         * The type Webdict.
+         */
         @NoArgsConstructor
         @Data
         public static class Webdict {
+            /**
+             * The Url.
+             */
             private String url;
         }
 
+        /**
+         * The type Basic.
+         */
         @NoArgsConstructor
         @Data
         public static class Basic {
+            /**
+             * The Phonetic.
+             */
             private String phonetic;
+            /**
+             * The Explains.
+             */
             private List<String> explains;
         }
 
+        /**
+         * The type Web.
+         */
         @NoArgsConstructor
         @Data
         public static class Web {
+            /**
+             * The Key.
+             */
             private String key;
+            /**
+             * The Value.
+             */
             private List<String> value;
         }
     }
