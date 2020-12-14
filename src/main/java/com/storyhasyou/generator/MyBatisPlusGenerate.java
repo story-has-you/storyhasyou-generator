@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.generator.config.querys.MySqlQuery;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.AbstractTemplateEngine;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
+import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableMap;
 import com.storyhasyou.kratos.base.BaseController;
 import com.storyhasyou.kratos.base.BaseEntity;
@@ -52,17 +53,17 @@ public class MyBatisPlusGenerate {
     /**
      * The constant DB_URL.
      */
-    private static final String DB_URL = "rm-uf65vj1b6d9o3w75rfo.mysql.rds.aliyuncs.com";
+    private static final String DB_URL = "192.168.139.130 ";
 
     /**
      * The constant DB_PORT.
      */
-    private static final String DB_PORT = "4000";
+    private static final String DB_PORT = "3306";
 
     /**
      * The constant DB_NAME.
      */
-    private static final String DB_NAME = "blog_system";
+    private static final String DB_NAME = "boc";
 
     /**
      * JDBC 连接地址
@@ -80,17 +81,17 @@ public class MyBatisPlusGenerate {
     /**
      * 数据库账号
      */
-    private static final String JDBC_USERNAME = "blog_system";
+    private static final String JDBC_USERNAME = "root";
 
     /**
      * 数据库密码
      */
-    private static final String JDBC_PASSWORD = "idyvpLmCuNDBmByjPsmwyFHg";
+    private static final String JDBC_PASSWORD = "123456";
 
     /**
      * 包配置 - 父级目录
      */
-    private static final String PACKAGE_PARENT = "com.storyhasyou.generator";
+    private static final String PACKAGE_PARENT = "com.storyhasyou.boc";
 
 
     /**
@@ -121,19 +122,19 @@ public class MyBatisPlusGenerate {
     /**
      * 要生成的表，用 `,` 分割
      */
-    private static final String TABLES = "t_article,ums_author";
+    private static final String TABLES = "t_user";
     /**
      * 包配置 - 模块目录 <br>
      * 注意：如果表前缀与模块命相同，生成时会删除前缀，比如：core_admin 最终构建为 Admin, AdminController ...
      */
-    private static final String PACKAGE_MODULE_NAME = "";
+    private static final String PACKAGE_MODULE_NAME = "t";
 
     /**
      * 枚举列
      */
     private static final Map<String, Class<?>> COLUMNS = ImmutableMap.<String, Class<?>>builder()
-            .put("t_article.categories", Integer.class)
-            .put("ums_author.gender", Integer.class)
+            .put("t_user.gender", Integer.class)
+            .put("t_user.vip_level", Integer.class)
             .build();
 
 
@@ -151,6 +152,8 @@ public class MyBatisPlusGenerate {
         config.setBaseResultMap(true);
         config.setBaseColumnList(true);
         config.setFileOverride(true);
+        config.setServiceName("%sService");
+        config.setServiceImplName("%sServiceImpl");
         return config;
     }
 
@@ -304,8 +307,8 @@ public class MyBatisPlusGenerate {
             }
         }
         for (EnumGenerateModel enumGenerateModel : enumGenerateModelList) {
-            Map<Object, String> taxtMap = DataSourceUtils.textMap(dataSourceConfig(), enumGenerateModel);
-            List<EnumGenerateModel.Element> translation = TranslationUtils.translation(taxtMap);
+            Map<Object, String> textMap = DataSourceUtils.textMap(dataSourceConfig(), enumGenerateModel);
+            List<EnumGenerateModel.Element> translation = TranslationUtils.translation(textMap);
             translation.forEach(element -> {
                 String message = element.getMessage();
                 message = message.replaceAll(StringPool.SPACE, StringPool.UNDERSCORE).toUpperCase();
@@ -328,9 +331,7 @@ public class MyBatisPlusGenerate {
      */
     private static String captureName(String str) {
         // 进行字母的ascii编码前移，效率要高于截取字符串进行转换的操作
-        char[] cs = str.toCharArray();
-        cs[0] -= 32;
-        return String.valueOf(cs);
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, str);
     }
 
     /**
@@ -348,6 +349,7 @@ public class MyBatisPlusGenerate {
         generator.setCfg(injectionConfig());
         generator.setStrategy(strategyConfig());
         generator.execute();
+        // 分类: 0.未分类，1.技术类，2.文学类，3.政治类，4.科幻类
         enumGenerate(generator);
     }
 

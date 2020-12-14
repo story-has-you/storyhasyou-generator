@@ -35,8 +35,11 @@ public class DataSourceUtils {
             while (resultSet.next()) {
                 String field = resultSet.getString("Field");
                 if (StringUtils.equals(field, enumGenerateModel.getColumn())) {
-                    // 0.未分类，1.技术类，2.文学类，3.政治类，4.科幻类
+                    // 分类: 0.未分类，1.技术类，2.文学类，3.政治类，4.科幻类
                     String comment = resultSet.getString("Comment");
+                    if (comment.contains(StringPool.COLON)) {
+                        comment = comment.substring(comment.indexOf(StringPool.COLON) + 1);
+                    }
                     List<String> elements = SPLITTER_COMMENT.trimResults().splitToList(comment);
                     for (String element : elements) {
                         List<String> data = SPLITTER_ELEMENT.trimResults().splitToList(element);

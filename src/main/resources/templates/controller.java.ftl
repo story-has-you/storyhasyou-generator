@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
     class ${table.controllerName}<#if superControllerClass??> : ${superControllerClass}()</#if>
 <#else>
     <#if superControllerClass??>
-        public class ${table.controllerName} extends ${superControllerClass}<${entity}, I${entity}Service> {
+        public class ${table.controllerName} extends ${superControllerClass}<${entity}, ${entity}Service> {
     <#else>
         public class ${table.controllerName} {
     </#if>
