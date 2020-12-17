@@ -1,37 +1,78 @@
-# dmy-generator
+# storyhasyou-generator
 
-#### 介绍
-通用代码生成器：如 MyBatis Plus 等其它开源类库或自定义代码生成器
-
-#### 软件架构
-软件架构说明
+基于mybatis-plus的代码生成器，里面用到基类BaseController，BaseService，BaseServiceImpl等类在https://github.com/story-has-you/blades-of-chaos这个项目里。
 
 
-#### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+新增了枚举生成，如果想要在自动生成枚举，对数据库注释的格式有些规范
 
-#### 使用说明
+例如
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```sql
+`vip_level` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'vip等级: 1.普通会员, 2.青铜会员, 3.黄金会员, 4.钻石会员',
+```
 
-#### 参与贡献
+会自动翻译中文生成枚举类
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+```java
+import com.storyhasyou.kratos.enums.BaseEnum;
+import lombok.AllArgsConstructor;
 
 
-#### 码云特技
+/**
+ * @author fangxi created by 2020/12/14
+ */
+@AllArgsConstructor
+public enum VipLevelEnum implements BaseEnum<Integer> {
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5.  码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+
+    /**
+     * 普通会员
+     */
+    REGULAR_MEMBER(1, "普通会员"),
+
+    /**
+     * 青铜会员
+     */
+    BRONZE_MEMBER(2, "青铜会员"),
+
+    /**
+     * 黄金会员
+     */
+    GOLD_MEMBER(3, "黄金会员"),
+
+    /**
+     * 钻石会员
+     */
+    DIAMOND_MEMBER(4, "钻石会员"),
+    ;
+
+    private final Integer code;
+    private final String message;
+
+    @Override
+    public Integer getCode() {
+        return this.code;
+    }
+
+    @Override
+    public String getMessage() {
+        return this.message;
+    }
+}
+```
+
+
+
+需要在代码里面配置需要生成的枚举类
+
+```java
+    /**
+     * 枚举列
+     */
+    private static final Map<String, Class<?>> COLUMNS = ImmutableMap.<String, Class<?>>builder()
+            .put("表名.字段名", Integer.class)
+            .put("t_user.vip_level", Integer.class)
+            .build();
+```
+
