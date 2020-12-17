@@ -1,6 +1,6 @@
 # storyhasyou-generator
 
-基于mybatis-plus的代码生成器，里面用到基类BaseController，BaseService，BaseServiceImpl等类在https://github.com/story-has-you/blades-of-chaos这个项目里。
+基于mybatis-plus的代码生成器，里面用到基类BaseController，BaseService，BaseServiceImpl等类在https://github.com/story-has-you/blades-of-chaos   这个项目里。
 
 
 
