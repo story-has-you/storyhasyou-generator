@@ -5,11 +5,18 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
-import com.baomidou.mybatisplus.generator.config.*;
+import com.baomidou.mybatisplus.generator.config.DataSourceConfig;
+import com.baomidou.mybatisplus.generator.config.FileOutConfig;
+import com.baomidou.mybatisplus.generator.config.GlobalConfig;
+import com.baomidou.mybatisplus.generator.config.PackageConfig;
+import com.baomidou.mybatisplus.generator.config.StrategyConfig;
+import com.baomidou.mybatisplus.generator.config.TemplateConfig;
 import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
 import com.baomidou.mybatisplus.generator.config.po.TableFill;
 import com.baomidou.mybatisplus.generator.config.po.TableInfo;
 import com.baomidou.mybatisplus.generator.config.querys.MySqlQuery;
+import com.baomidou.mybatisplus.generator.config.rules.DbColumnType;
+import com.baomidou.mybatisplus.generator.config.rules.IColumnType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 import com.baomidou.mybatisplus.generator.engine.AbstractTemplateEngine;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
@@ -22,15 +29,14 @@ import com.storyhasyou.kratos.base.BaseServiceImpl;
 import com.storyhasyou.kratos.toolkit.DatePattern;
 import com.storyhasyou.kratos.utils.CollectionUtils;
 import com.storyhasyou.kratos.utils.DateUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The type My batis plus generate.
@@ -138,7 +144,6 @@ public class MyBatisPlusGenerate {
             .build();
 
 
-
     /**
      * 全局配置
      *
@@ -169,7 +174,7 @@ public class MyBatisPlusGenerate {
         config.setUsername(JDBC_USERNAME);
         config.setPassword(JDBC_PASSWORD);
         config.setDbType(DbType.MYSQL);
-        config.setTypeConvert(new MySqlTypeConvert());
+        config.setTypeConvert(new MySqlTypeConvertCustom());
         config.setDbQuery(new MySqlQuery());
         return config;
     }
@@ -270,7 +275,8 @@ public class MyBatisPlusGenerate {
             @Override
             public String outputFile(TableInfo tableInfo) {
                 // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
-                return USER_DIR + "/src/main/resources/mapper/" + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_XML;
+                return USER_DIR + "/src/main/resources/mapper/" + tableInfo.getEntityName() + "Mapper"
+                        + StringPool.DOT_XML;
             }
         });
 
@@ -318,7 +324,8 @@ public class MyBatisPlusGenerate {
             enumGenerateModel.setElements(translation);
             Map<String, Object> objectMap = new HashMap<>(1);
             objectMap.put("enum", enumGenerateModel);
-            String outPutFile = "src/main/java/" + packagePath + "/" + PACKAGE_MODULE_NAME + "/enums/" + enumGenerateModel.getEnumName() + StringPool.DOT_JAVA;
+            String outPutFile = "src/main/java/" + packagePath + "/" + PACKAGE_MODULE_NAME + "/enums/"
+                    + enumGenerateModel.getEnumName() + StringPool.DOT_JAVA;
             String templatePath = "templates/enum.java";
             templateEngine.writer(objectMap, templateEngine.templateFilePath(templatePath), outPutFile);
         }
@@ -353,5 +360,15 @@ public class MyBatisPlusGenerate {
         enumGenerate(generator);
     }
 
+    public static class MySqlTypeConvertCustom extends MySqlTypeConvert {
+        @Override
+        public IColumnType processTypeConvert(GlobalConfig config, String fieldType) {
+            String t = fieldType.toLowerCase();
+            if (t.contains("tinyint(1)")) {
+                return DbColumnType.INTEGER;
+            }
+            return super.processTypeConvert(config, fieldType);
+        }
+    }
 
 }
